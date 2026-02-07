@@ -1,0 +1,157 @@
+/**
+ * Apps/Integrations Page - Dashboard Portal
+ * 
+ * Displays available app integrations with connection cards.
+ * Features: search, filter by connection status, A-Z sorting, connect/disconnect buttons.
+ * 
+ * @added 2026-02-04
+ * @route /dashboard/apps
+ */
+"use client"
+
+import { useState, type ChangeEvent } from 'react'
+import { SlidersHorizontal, ArrowUpAZ, ArrowDownAZ } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { apps } from './data/apps'
+
+type AppType = 'all' | 'connected' | 'notConnected'
+
+const appText = new Map<AppType, string>([
+    ['all', 'All Apps'],
+    ['connected', 'Connected'],
+    ['notConnected', 'Not Connected'],
+])
+
+export default function AppsPage() {
+    const [sort, setSort] = useState<'asc' | 'desc'>('asc')
+    const [appType, setAppType] = useState<AppType>('all')
+    const [searchTerm, setSearchTerm] = useState('')
+
+    const filteredApps = apps
+        .sort((a, b) =>
+            sort === 'asc'
+                ? a.name.localeCompare(b.name)
+                : b.name.localeCompare(a.name)
+        )
+        .filter((app) =>
+            appType === 'connected'
+                ? app.connected
+                : appType === 'notConnected'
+                    ? !app.connected
+                    : true
+        )
+        .filter((app) => app.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(e.target.value)
+    }
+
+    const handleTypeChange = (value: AppType) => {
+        setAppType(value)
+    }
+
+    const handleSortChange = (newSort: 'asc' | 'desc') => {
+        setSort(newSort)
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* ===== Top Heading ===== */}
+            <div>
+                <h1 className='text-2xl font-bold tracking-tight'>
+                    App Integrations
+                </h1>
+                <p className='text-muted-foreground'>
+                    Here&apos;s a list of your apps for the integration!
+                </p>
+            </div>
+
+            {/* ===== Filters ===== */}
+            <div className='flex items-end justify-between sm:items-center'>
+                <div className='flex flex-col gap-4 sm:flex-row'>
+                    <Input
+                        placeholder='Filter apps...'
+                        className='h-9 w-40 lg:w-[250px]'
+                        value={searchTerm}
+                        onChange={handleSearch}
+                    />
+                    <Select value={appType} onValueChange={handleTypeChange}>
+                        <SelectTrigger className='w-36'>
+                            <SelectValue>{appText.get(appType)}</SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value='all'>All Apps</SelectItem>
+                            <SelectItem value='connected'>Connected</SelectItem>
+                            <SelectItem value='notConnected'>Not Connected</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <Select value={sort} onValueChange={handleSortChange}>
+                    <SelectTrigger className='w-16'>
+                        <SelectValue>
+                            <SlidersHorizontal size={18} />
+                        </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent align='end'>
+                        <SelectItem value='asc'>
+                            <div className='flex items-center gap-4'>
+                                <ArrowUpAZ size={16} />
+                                <span>Ascending</span>
+                            </div>
+                        </SelectItem>
+                        <SelectItem value='desc'>
+                            <div className='flex items-center gap-4'>
+                                <ArrowDownAZ size={16} />
+                                <span>Descending</span>
+                            </div>
+                        </SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            <Separator className='shadow-sm' />
+
+            {/* ===== Apps Grid ===== */}
+            <ul className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
+                {filteredApps.map((app) => (
+                    <li
+                        key={app.name}
+                        className='rounded-lg border p-4 hover:shadow-md transition-shadow'
+                    >
+                        <div className='mb-8 flex items-center justify-between'>
+                            <div
+                                className='flex size-10 items-center justify-center rounded-lg bg-muted p-2'
+                            >
+                                {app.logo}
+                            </div>
+                            <Button
+                                variant='outline'
+                                size='sm'
+                                className={app.connected
+                                    ? 'border border-blue-300 bg-blue-50 hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900'
+                                    : ''
+                                }
+                            >
+                                {app.connected ? 'Connected' : 'Connect'}
+                            </Button>
+                        </div>
+                        <div>
+                            <h2 className='mb-1 font-semibold'>{app.name}</h2>
+                            <p className='line-clamp-2 text-gray-500 dark:text-gray-400'>{app.desc}</p>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    )
+}

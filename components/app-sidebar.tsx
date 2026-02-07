@@ -94,12 +94,12 @@ const adminData = {
                 },
                 {
                     title: "Tasks",
-                    url: "#",
+                    url: "/dashboard/tasks",
                     icon: CheckSquare,
                 },
                 {
                     title: "Apps",
-                    url: "#",
+                    url: "/dashboard/apps",
                     icon: Box,
                 },
                 {
@@ -110,7 +110,7 @@ const adminData = {
                 },
                 {
                     title: "Users",
-                    url: "#",
+                    url: "/dashboard/users",
                     icon: Users,
                 },
                 {
