@@ -16,13 +16,25 @@ import {
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb"
 import { Input } from "@/components/ui/input"
-import { Search, Moon, Bell, Grid, User } from "lucide-react"
+import { Search, Moon, Sun, Monitor, LogOut, Settings, User } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useTheme } from "next-themes"
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { SearchCommand } from "@/components/search-command"
+import { Button } from "@/components/ui/button"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { user, role, loading } = useAuth()
+    const { user, role, loading, logout } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
+    const { setTheme, theme } = useTheme()
 
     useEffect(() => {
         if (!loading && !user) {
@@ -42,31 +54,70 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <SidebarTrigger className="-ml-1 text-muted-foreground hover:text-foreground" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
                         <div className="hidden md:flex items-center gap-6 px-4">
-                            <Link href="/dashboard" className={`text-sm font-medium cursor-pointer ${pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'}`}>Overview</Link>
-                            <Link href="#" className="text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground">Customers</Link>
-                            <Link href="#" className="text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground">Products</Link>
-                            <Link href="#" className="text-sm font-medium text-muted-foreground cursor-pointer hover:text-foreground">Settings</Link>
+                            {/* Navigation links removed for cleaner dashboard design */}
                         </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="relative hidden lg:block w-64">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                type="search"
-                                placeholder="Search..."
-                                className="w-full bg-background pl-8 h-9 text-sm"
-                            />
-                            <span className="absolute right-2 top-2 h-5 w-8 rounded border bg-muted flex items-center justify-center text-[10px] text-muted-foreground">
-                                ⌘ K
-                            </span>
+                            <SearchCommand />
                         </div>
                         <div className="flex items-center gap-3 mr-2">
-                            <Moon className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
-                            <Settings className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-foreground" />
-                            <Avatar className="h-8 w-8 ml-2 border cursor-pointer">
-                                <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-                                <AvatarFallback>SN</AvatarFallback>
-                            </Avatar>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                                        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                                        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                                        <span className="sr-only">Toggle theme</span>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                                        <Sun className="mr-2 h-4 w-4" />
+                                        <span>Light</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                                        <Moon className="mr-2 h-4 w-4" />
+                                        <span>Dark</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                                        <Monitor className="mr-2 h-4 w-4" />
+                                        <span>System</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Avatar className="h-8 w-8 ml-2 border cursor-pointer hover:opacity-80 transition-opacity">
+                                        <AvatarImage src="/avatars/01.png" alt="@shadcn" />
+                                        <AvatarFallback>{user.name ? user.name[0].toUpperCase() : 'U'}</AvatarFallback>
+                                    </Avatar>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuLabel className="font-normal">
+                                        <div className="flex flex-col space-y-1">
+                                            <p className="text-sm font-medium leading-none">{user.name}</p>
+                                            <p className="text-xs leading-none text-muted-foreground">
+                                                {role}
+                                            </p>
+                                        </div>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => router.push("/dashboard/settings/profile")}>
+                                        <User className="mr-2 h-4 w-4" />
+                                        <span>Profile</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => router.push("/dashboard/settings/account")}>
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        <span>Settings</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={logout} className="text-red-500 focus:text-red-500">
+                                        <LogOut className="mr-2 h-4 w-4" />
+                                        <span>Log out</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
                     </div>
                 </header>
@@ -75,25 +126,5 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </main>
             </SidebarInset>
         </div>
-    )
-}
-
-function Settings(props: any) {
-    return (
-        <svg
-            {...props}
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        >
-            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-            <circle cx="12" cy="12" r="3" />
-        </svg>
     )
 }

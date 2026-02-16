@@ -74,9 +74,39 @@ import {
 import { useAuth } from "@/hooks/use-auth"
 import { getInitials } from "@/lib/utils"
 import { usePathname } from "next/navigation"
+import type { LucideIcon } from "lucide-react"
+
+// Type definitions for menu items
+interface SubMenuItem {
+    title: string
+    url: string
+}
+
+interface MenuItem {
+    title: string
+    url: string
+    icon?: LucideIcon
+    isActive?: boolean
+    badge?: string
+    items?: SubMenuItem[]
+}
+
+interface NavGroup {
+    title: string
+    items: MenuItem[]
+}
+
+interface SidebarData {
+    user: {
+        name: string
+        email: string
+        avatar: string
+    }
+    navMain: NavGroup[]
+}
 
 // Menu items for Admin
-const adminData = {
+const adminData: SidebarData = {
     user: {
         name: "satnaing",
         email: "satnaingdev@gmail.com",
@@ -98,8 +128,8 @@ const adminData = {
                     icon: CheckSquare,
                 },
                 {
-                    title: "Apps",
-                    url: "/dashboard/apps",
+                    title: "Services",
+                    url: "/dashboard/services",
                     icon: Box,
                 },
                 {
@@ -170,7 +200,7 @@ const adminData = {
 }
 
 // Menu items for Client
-const clientData = {
+const clientData: SidebarData = {
     user: {
         name: "Client User",
         email: "client@example.com",
@@ -218,7 +248,7 @@ const clientData = {
 }
 
 // Menu items for Editor
-const editorData = {
+const editorData: SidebarData = {
     user: {
         name: "Editor User",
         email: "editor@example.com",
