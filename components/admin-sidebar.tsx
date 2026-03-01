@@ -18,13 +18,15 @@ import {
     FolderKanban,
     Settings,
     LogOut,
-    Shield
+    Shield,
+    Inbox
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const menuItems = [
     { title: "Dashboard", url: "/admin/dashboard", icon: LayoutDashboard },
+    { title: "Incoming Requests", url: "/admin/requests", icon: Inbox },
     { title: "Users", url: "/admin/users", icon: Users },
     { title: "Projects", url: "/admin/projects", icon: FolderKanban },
     { title: "Settings", url: "/admin/settings", icon: Settings },

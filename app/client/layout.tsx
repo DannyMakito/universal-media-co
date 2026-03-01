@@ -1,7 +1,7 @@
 "use client"
 
-import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
-import { ClientSidebar } from "@/components/client-sidebar"
+import { SidebarInset } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/app-sidebar"
 
 export default function ClientLayout({
     children,
@@ -9,13 +9,13 @@ export default function ClientLayout({
     children: React.ReactNode
 }) {
     return (
-        <SidebarProvider>
-            <ClientSidebar />
+        <>
+            <AppSidebar />
             <SidebarInset>
                 <main className="flex-1 p-6">
                     {children}
                 </main>
             </SidebarInset>
-        </SidebarProvider>
+        </>
     )
 }

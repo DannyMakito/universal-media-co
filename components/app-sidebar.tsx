@@ -123,6 +123,12 @@ const adminData: SidebarData = {
                     isActive: true,
                 },
                 {
+                    title: "Incoming Requests",
+                    url: "/admin/requests",
+                    icon: Box,
+                    badge: "2",
+                },
+                {
                     title: "Tasks",
                     url: "/dashboard/tasks",
                     icon: CheckSquare,
@@ -218,7 +224,7 @@ const clientData: SidebarData = {
                 },
                 {
                     title: "Orders",
-                    url: "#",
+                    url: "/client/orders",
                     icon: Box,
                     badge: "2",
                 },

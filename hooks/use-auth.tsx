@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 type Role = "admin" | "client" | "editor"
 
 interface AuthContextType {
-    user: { name: string; email: string } | null
+    user: { id: string; name: string; email: string } | null
     role: Role | null
     loading: boolean
     login: (role: Role) => void
@@ -16,7 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<{ name: string; email: string } | null>(null)
+    const [user, setUser] = useState<{ id: string; name: string; email: string } | null>(null)
     const [role, setRole] = useState<Role | null>(null)
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -26,14 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const savedRole = localStorage.getItem("user-role") as Role | null
         if (savedRole) {
             setRole(savedRole)
-            setUser({ name: "Satnaing", email: "satnaingdev@gmail.com" })
+            setUser({ id: "user_satnaing", name: "Satnaing", email: "satnaingdev@gmail.com" })
         }
         setLoading(false)
     }, [])
 
     const login = (selectedRole: Role) => {
         setRole(selectedRole)
-        setUser({ name: "Satnaing", email: "satnaingdev@gmail.com" })
+        setUser({ id: "user_satnaing", name: "Satnaing", email: "satnaingdev@gmail.com" })
         localStorage.setItem("user-role", selectedRole)
         router.push("/dashboard")
     }
