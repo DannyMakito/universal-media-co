@@ -271,6 +271,11 @@ const editorData: SidebarData = {
                     isActive: true,
                 },
                 {
+                    title: "My Projects",
+                    url: "/editor/projects",
+                    icon: CheckSquare,
+                },
+                {
                     title: "Articles",
                     url: "#",
                     icon: FileText,

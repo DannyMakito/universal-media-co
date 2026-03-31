@@ -11,14 +11,20 @@ import { getAdminIncomingOrders, formatDate, Order } from "@/lib/order-service"
 export default function AdminRequestsPage() {
     const [orders, setOrders] = useState<Order[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [isClient, setIsClient] = useState(false)
 
     useEffect(() => {
+        setIsClient(true)
+    }, [])
+
+    useEffect(() => {
+        if (!isClient) return
         const incomingOrders = getAdminIncomingOrders()
         setOrders(incomingOrders)
         setIsLoading(false)
-    }, [])
+    }, [isClient])
 
-    if (isLoading) {
+    if (!isClient || isLoading) {
         return <div className="text-center py-8">Loading incoming requests...</div>
     }
 

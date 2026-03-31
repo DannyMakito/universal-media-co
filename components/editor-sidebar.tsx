@@ -17,13 +17,15 @@ import {
     ListTodo,
     Settings,
     LogOut,
-    Film
+    Film,
+    FolderKanban
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const menuItems = [
     { title: "Dashboard", url: "/editor/dashboard", icon: LayoutDashboard },
+    { title: "My Projects", url: "/editor/projects", icon: FolderKanban },
     { title: "Tasks", url: "/editor/tasks", icon: ListTodo },
     { title: "Settings", url: "/editor/settings", icon: Settings },
 ]
