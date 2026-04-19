@@ -72,6 +72,7 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 import { useAuth } from "@/hooks/use-auth"
+import { useUser } from "@clerk/nextjs"
 import { getInitials } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import type { LucideIcon } from "lucide-react"
@@ -106,211 +107,195 @@ interface SidebarData {
 }
 
 // Menu items for Admin
-const adminData: SidebarData = {
-    user: {
-        name: "satnaing",
-        email: "satnaingdev@gmail.com",
-        avatar: "/avatars/shadcn.jpg",
+const adminNav = [
+    {
+        title: "General",
+        items: [
+            {
+                title: "Dashboard",
+                url: "/dashboard",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
+                title: "Incoming Requests",
+                url: "/admin/requests",
+                icon: Box,
+                badge: "2",
+            },
+            {
+                title: "Tasks",
+                url: "/dashboard/tasks",
+                icon: CheckSquare,
+            },
+            {
+                title: "Services",
+                url: "/dashboard/services",
+                icon: Box,
+            },
+            {
+                title: "Chats",
+                url: "/dashboard/chats",
+                icon: MessageSquare,
+                badge: "3",
+            },
+            {
+                title: "Users",
+                url: "/dashboard/users",
+                icon: Users,
+            },
+            {
+                title: "Secured by Clerk",
+                url: "#",
+                icon: Lock,
+                items: [
+                    { title: "Settings", url: "#" },
+                    { title: "Profile", url: "#" },
+                ],
+            },
+        ],
     },
-    navMain: [
-        {
-            title: "General",
-            items: [
-                {
-                    title: "Dashboard",
-                    url: "/dashboard",
-                    icon: LayoutDashboard,
-                    isActive: true,
-                },
-                {
-                    title: "Incoming Requests",
-                    url: "/admin/requests",
-                    icon: Box,
-                    badge: "2",
-                },
-                {
-                    title: "Tasks",
-                    url: "/dashboard/tasks",
-                    icon: CheckSquare,
-                },
-                {
-                    title: "Services",
-                    url: "/dashboard/services",
-                    icon: Box,
-                },
-                {
-                    title: "Chats",
-                    url: "/dashboard/chats",
-                    icon: MessageSquare,
-                    badge: "3",
-                },
-                {
-                    title: "Users",
-                    url: "/dashboard/users",
-                    icon: Users,
-                },
-                {
-                    title: "Secured by Clerk",
-                    url: "#",
-                    icon: Lock,
-                    items: [
-                        { title: "Settings", url: "#" },
-                        { title: "Profile", url: "#" },
-                    ],
-                },
-            ],
-        },
-        {
-            title: "Pages",
-            items: [
-                {
-                    title: "Auth",
-                    url: "#",
-                    icon: ShieldAlert,
-                    items: [
-                        { title: "Login", url: "#" },
-                        { title: "Register", url: "#" },
-                    ],
-                },
-                {
-                    title: "Errors",
-                    url: "#",
-                    icon: AlertTriangle,
-                    items: [
-                        { title: "404", url: "#" },
-                        { title: "500", url: "#" },
-                    ],
-                },
-            ],
-        },
-        {
-            title: "Other",
-            items: [
-                {
-                    title: "Settings",
-                    url: "#",
-                    icon: Settings,
-                    items: [
-                        { title: "General", url: "#" },
-                        { title: "Security", url: "#" },
-                    ],
-                },
-                {
-                    title: "Help Center",
-                    url: "#",
-                    icon: HelpCircle,
-                },
-            ],
-        },
-    ],
-}
+    {
+        title: "Pages",
+        items: [
+            {
+                title: "Auth",
+                url: "#",
+                icon: ShieldAlert,
+                items: [
+                    { title: "Login", url: "#" },
+                    { title: "Register", url: "#" },
+                ],
+            },
+            {
+                title: "Errors",
+                url: "#",
+                icon: AlertTriangle,
+                items: [
+                    { title: "404", url: "#" },
+                    { title: "500", url: "#" },
+                ],
+            },
+        ],
+    },
+    {
+        title: "Other",
+        items: [
+            {
+                title: "Settings",
+                url: "#",
+                icon: Settings,
+                items: [
+                    { title: "General", url: "#" },
+                    { title: "Security", url: "#" },
+                ],
+            },
+            {
+                title: "Help Center",
+                url: "#",
+                icon: HelpCircle,
+            },
+        ],
+    },
+]
 
 // Menu items for Client
-const clientData: SidebarData = {
-    user: {
-        name: "Client User",
-        email: "client@example.com",
-        avatar: "/avatars/02.png",
+const clientNav = [
+    {
+        title: "Navigation",
+        items: [
+            {
+                title: "My Dashboard",
+                url: "/dashboard",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
+                title: "Orders",
+                url: "/client/orders",
+                icon: Box,
+                badge: "2",
+            },
+            {
+                title: "Tickets",
+                url: "#",
+                icon: MessageSquare,
+            },
+        ],
     },
-    navMain: [
-        {
-            title: "Navigation",
-            items: [
-                {
-                    title: "My Dashboard",
-                    url: "/dashboard",
-                    icon: LayoutDashboard,
-                    isActive: true,
-                },
-                {
-                    title: "Orders",
-                    url: "/client/orders",
-                    icon: Box,
-                    badge: "2",
-                },
-                {
-                    title: "Tickets",
-                    url: "#",
-                    icon: MessageSquare,
-                },
-            ],
-        },
-        {
-            title: "Other",
-            items: [
-                {
-                    title: "Account Settings",
-                    url: "#",
-                    icon: Settings,
-                },
-                {
-                    title: "Help & Support",
-                    url: "#",
-                    icon: HelpCircle,
-                },
-            ],
-        },
-    ],
-}
+    {
+        title: "Other",
+        items: [
+            {
+                title: "Account Settings",
+                url: "#",
+                icon: Settings,
+            },
+            {
+                title: "Help & Support",
+                url: "#",
+                icon: HelpCircle,
+            },
+        ],
+    },
+]
 
 // Menu items for Editor
-const editorData: SidebarData = {
-    user: {
-        name: "Editor User",
-        email: "editor@example.com",
-        avatar: "/avatars/03.png",
+const editorNav = [
+    {
+        title: "Content",
+        items: [
+            {
+                title: "Dashboard",
+                url: "/dashboard",
+                icon: LayoutDashboard,
+                isActive: true,
+            },
+            {
+                title: "My Projects",
+                url: "/editor/projects",
+                icon: CheckSquare,
+            },
+            {
+                title: "Articles",
+                url: "#",
+                icon: FileText,
+            },
+            {
+                title: "Media Library",
+                url: "#",
+                icon: Box,
+            },
+        ],
     },
-    navMain: [
-        {
-            title: "Content",
-            items: [
-                {
-                    title: "Dashboard",
-                    url: "/dashboard",
-                    icon: LayoutDashboard,
-                    isActive: true,
-                },
-                {
-                    title: "My Projects",
-                    url: "/editor/projects",
-                    icon: CheckSquare,
-                },
-                {
-                    title: "Articles",
-                    url: "#",
-                    icon: FileText,
-                },
-                {
-                    title: "Media Library",
-                    url: "#",
-                    icon: Box,
-                },
-            ],
-        },
-        {
-            title: "Pages",
-            items: [
-                {
-                    title: "Manage Site",
-                    url: "#",
-                    icon: Settings2,
-                },
-            ],
-        },
-    ],
-}
+    {
+        title: "Pages",
+        items: [
+            {
+                title: "Manage Site",
+                url: "#",
+                icon: Settings2,
+            },
+        ],
+    },
+]
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-    const { role, logout } = useAuth()
+    const { user, role, logout, loading } = useAuth()
+    const { user: clerkUser } = useUser()
     const pathname = usePathname()
 
-    const data = React.useMemo(() => {
+    const navMain = React.useMemo(() => {
         switch (role) {
-            case "client": return clientData
-            case "editor": return editorData
-            default: return adminData
+            case "client": return clientNav
+            case "editor": return editorNav
+            default: return adminNav
         }
     }, [role])
+
+    const userName = user?.name || clerkUser?.fullName || "User"
+    const userEmail = user?.email || clerkUser?.primaryEmailAddress?.emailAddress || ""
+    const userAvatar = clerkUser?.imageUrl || ""
 
     return (
         <Sidebar variant="sidebar" {...props}>
@@ -335,7 +320,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
             </SidebarHeader>
             <SidebarContent>
-                {data.navMain.map((group) => (
+                {navMain.map((group) => (
                     <div key={group.title} className="mb-6 px-2">
                         <div className="px-4 py-2 text-[11px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">
                             {group.title}
@@ -410,12 +395,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                                 >
                                     <Avatar className="h-8 w-8 rounded-lg">
-                                        <AvatarImage src={data.user.avatar} alt={data.user.name} />
-                                        <AvatarFallback className="rounded-lg">{getInitials(data.user.name)}</AvatarFallback>
+                                        <AvatarImage src={userAvatar} alt={userName} />
+                                        <AvatarFallback className="rounded-lg">{getInitials(userName)}</AvatarFallback>
                                     </Avatar>
                                     <div className="grid flex-1 text-left text-sm leading-tight">
-                                        <span className="truncate font-semibold">{data.user.name}</span>
-                                        <span className="truncate text-xs">{data.user.email}</span>
+                                        <span className="truncate font-semibold">{userName}</span>
+                                        <span className="truncate text-xs">{userEmail}</span>
                                     </div>
                                     <ChevronsUpDown className="ml-auto size-4 opacity-50" />
                                 </SidebarMenuButton>
@@ -429,12 +414,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                 <DropdownMenuLabel className="p-0 font-normal">
                                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                         <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarImage src={data.user.avatar} alt={data.user.name} />
-                                            <AvatarFallback className="rounded-lg">{getInitials(data.user.name)}</AvatarFallback>
+                                            <AvatarImage src={userAvatar} alt={userName} />
+                                            <AvatarFallback className="rounded-lg">{getInitials(userName)}</AvatarFallback>
                                         </Avatar>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
-                                            <span className="truncate font-semibold">{data.user.name}</span>
-                                            <span className="truncate text-xs">{data.user.email}</span>
+                                            <span className="truncate font-semibold">{userName}</span>
+                                            <span className="truncate text-xs">{userEmail}</span>
                                         </div>
                                     </div>
                                 </DropdownMenuLabel>

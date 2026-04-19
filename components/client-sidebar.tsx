@@ -22,6 +22,12 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
+import { SignOutButton, useUser } from "@clerk/nextjs"
+
 const menuItems = [
     { title: "Dashboard", url: "/client/dashboard", icon: LayoutDashboard },
     { title: "Projects", url: "/client/projects", icon: FolderKanban },
@@ -30,6 +36,8 @@ const menuItems = [
 
 export function ClientSidebar() {
     const pathname = usePathname()
+    const { user: clerkUser } = useUser()
+    const user = useQuery(api.users.getCurrentUser)
 
     return (
         <Sidebar>
@@ -60,15 +68,45 @@ export function ClientSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <SidebarFooter className="border-t border-sidebar-border p-4">
+            <SidebarFooter className="border-t border-sidebar-border p-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton asChild>
-                            <Link href="/login">
+                        <div className="flex items-center gap-3 px-3 py-2">
+                            {user ? (
+                                <>
+                                    <Avatar className="h-9 w-9 border border-sidebar-border">
+                                        <AvatarImage src={clerkUser?.imageUrl} alt={user.name} />
+                                        <AvatarFallback className="bg-primary/10 text-primary">
+                                            {user.name?.charAt(0).toUpperCase()}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex flex-1 flex-col overflow-hidden">
+                                        <span className="truncate text-sm font-medium leading-tight">
+                                            {user.name}
+                                        </span>
+                                        <span className="truncate text-xs text-muted-foreground leading-tight">
+                                            {user.email}
+                                        </span>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <Skeleton className="h-9 w-9 rounded-full" />
+                                    <div className="flex flex-1 flex-col gap-1">
+                                        <Skeleton className="h-3 w-20" />
+                                        <Skeleton className="h-2 w-24" />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </SidebarMenuItem>
+                    <SidebarMenuItem>
+                        <SignOutButton redirectUrl="/login">
+                            <SidebarMenuButton className="text-muted-foreground hover:text-foreground">
                                 <LogOut className="h-4 w-4" />
                                 <span>Log out</span>
-                            </Link>
-                        </SidebarMenuButton>
+                            </SidebarMenuButton>
+                        </SignOutButton>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

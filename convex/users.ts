@@ -8,7 +8,7 @@ export const getUserByClerkId = query({
         return await ctx.db
             .query("users")
             .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
-            .unique()
+            .first()
     },
 })
 
@@ -19,11 +19,11 @@ export const getUserByEmail = query({
         return await ctx.db
             .query("users")
             .withIndex("by_email", (q) => q.eq("email", args.email))
-            .unique()
+            .first()
     },
 })
 
-// Create a new user (called from webhook)
+// Create a new user (called from webhook or signup fallback)
 export const createUser = mutation({
     args: {
         clerkId: v.string(),
@@ -32,6 +32,29 @@ export const createUser = mutation({
         role: v.union(v.literal("admin"), v.literal("client"), v.literal("editor")),
     },
     handler: async (ctx, args) => {
+        // Check if user already exists by clerkId
+        const existingByClerk = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", args.clerkId))
+            .first()
+        
+        if (existingByClerk) return existingByClerk._id
+
+        // Check if user already exists by email (handle case where user pre-created or synced differently)
+        const existingByEmail = await ctx.db
+            .query("users")
+            .withIndex("by_email", (q) => q.eq("email", args.email))
+            .first()
+
+        if (existingByEmail) {
+            // Update the existing user with the clerkId
+            await ctx.db.patch(existingByEmail._id, {
+                clerkId: args.clerkId,
+                updatedAt: Date.now(),
+            })
+            return existingByEmail._id
+        }
+
         const now = Date.now()
         const userId = await ctx.db.insert("users", {
             clerkId: args.clerkId,
@@ -79,7 +102,7 @@ export const getCurrentUser = query({
         return await ctx.db
             .query("users")
             .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
-            .unique()
+            .first()
     },
 })
 
@@ -148,7 +171,7 @@ export const deactivateUser = mutation({
         const editor = await ctx.db
             .query("editors")
             .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-            .unique()
+            .first()
 
         if (editor) {
             await ctx.db.patch(editor._id, {

@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect } from "react"
+import React, { createContext, useContext, useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useUser, useAuth as useClerkAuth } from "@clerk/nextjs"
 import { useQuery, useMutation } from "convex/react"
@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { user: clerkUser, isLoaded: isClerkLoaded } = useUser()
     const { signOut } = useClerkAuth()
     const router = useRouter()
+    const creating = useRef(false)
     
     // Fetch user from Convex database
     const convexUser = useQuery(
@@ -82,49 +83,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 loading: false,
                 isAuthenticated: true,
             })
-        } else {
-            // User is authenticated with Clerk but not in Convex yet
-            // Auto-create user as client (fallback when webhook isn't configured)
-            const email = clerkUser.primaryEmailAddress?.emailAddress
-            const name = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User"
-            
-            if (email) {
-                // Create user in Convex
-                createUser({
-                    clerkId: clerkUser.id,
-                    email,
-                    name,
-                    role: "client",
-                }).then((userId) => {
-                    setAuthState({
-                        user: {
-                            id: userId,
-                            clerkId: clerkUser.id,
-                            name,
-                            email,
-                            role: "client",
-                        },
-                        role: "client",
-                        loading: false,
-                        isAuthenticated: true,
-                    })
-                }).catch((err) => {
-                    console.error("Failed to create user:", err)
-                    setAuthState({
-                        user: null,
-                        role: null,
-                        loading: false,
-                        isAuthenticated: true,
-                    })
+            return
+        }
+
+        // Wait for Convex query to finish loading (convexUser will be null if not found)
+        if (convexUser === undefined || creating.current) {
+            return
+        }
+
+        // User is authenticated with Clerk but not in Convex yet
+        // Auto-create user using role from Clerk metadata (defaults to client)
+        const email = clerkUser.primaryEmailAddress?.emailAddress
+        const name = `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || "User"
+        
+        // Extract role from Clerk public metadata
+        const clerkRole = (clerkUser.publicMetadata?.role as Role) || "client"
+        
+        if (email) {
+            creating.current = true
+            createUser({
+                clerkId: clerkUser.id,
+                email,
+                name,
+                role: clerkRole,
+            }).then((userId) => {
+                setAuthState({
+                    user: {
+                        id: userId,
+                        clerkId: clerkUser.id,
+                        name,
+                        email,
+                        role: clerkRole,
+                    },
+                    role: clerkRole,
+                    loading: false,
+                    isAuthenticated: true,
                 })
-            } else {
+                creating.current = false
+            }).catch((err) => {
+                console.error("Failed to create user:", err)
                 setAuthState({
                     user: null,
                     role: null,
                     loading: false,
                     isAuthenticated: true,
                 })
-            }
+                creating.current = false
+            })
+        } else {
+            setAuthState({
+                user: null,
+                role: null,
+                loading: false,
+                isAuthenticated: true,
+            })
         }
     }, [isClerkLoaded, clerkUser, convexUser, createUser])
 
