@@ -279,3 +279,60 @@ export const submitProjectSatisfaction = mutation({
         })
     },
 })
+
+// Get all paid orders (admin only)
+export const getPaidOrders = query({
+    args: {},
+    handler: async (ctx) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) return []
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique()
+
+        if (!user || user.role !== "admin") return []
+
+        // Since we don't have an index on isPaid, we filter in memory.
+        // If there are many orders, consider adding an index in schema.ts
+        const orders = await ctx.db
+            .query("orders")
+            .filter((q) => q.eq(q.field("isPaid"), true))
+            .collect()
+
+        // Include client info
+        return await Promise.all(
+            orders.map(async (order) => {
+                const client = await ctx.db.get(order.clientId)
+                return { ...order, client }
+            })
+        )
+    },
+})
+
+// Mark an order as paid (can be called via PayFast redirect for now)
+export const markOrderAsPaid = mutation({
+    args: {
+        orderId: v.id("orders"),
+    },
+    handler: async (ctx, args) => {
+        const order = await ctx.db.get(args.orderId)
+        if (!order) throw new Error("Order not found")
+
+        const updates: any = {
+            isPaid: true,
+            paymentDate: Date.now(),
+            status: "approved",
+            updatedAt: Date.now(),
+        }
+
+        if (order.quote) {
+            updates.paymentAmount = order.quote.price
+        }
+
+        await ctx.db.patch(args.orderId, updates)
+        return await ctx.db.get(args.orderId)
+    },
+})
+

@@ -51,6 +51,9 @@ export default defineSchema({
                 description: v.string(),
             })
         ),
+        isPaid: v.optional(v.boolean()),
+        paymentAmount: v.optional(v.number()),
+        paymentDate: v.optional(v.number()),
         createdAt: v.number(),
         updatedAt: v.number(),
     })
@@ -152,4 +155,26 @@ export default defineSchema({
         .index("by_projectId", ["projectId"])
         .index("by_orderId", ["orderId"])
         .index("by_clientId", ["clientId"]),
+
+    // Events / Competitions
+    events: defineTable({
+        title: v.string(),
+        description: v.string(),
+        mediaUrl: v.optional(v.string()), // can be external URL
+        mediaStorageId: v.optional(v.id("_storage")), // or convex storage ID
+        startDate: v.number(),
+        endDate: v.number(),
+        amountPerEntry: v.number(),
+        status: v.union(v.literal("active"), v.literal("completed")),
+        winners: v.optional(v.array(
+            v.object({
+                clientId: v.id("users"),
+                generatedAt: v.number(),
+            })
+        )),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+    })
+        .index("by_status", ["status"])
+        .index("by_dates", ["startDate", "endDate"]),
 })

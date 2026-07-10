@@ -3,12 +3,19 @@
 import { useEffect, useState } from "react"
 import React from "react"
 import Link from "next/link"
-import { ArrowLeft, Download, MessageSquare, Send, Star } from "lucide-react"
+import { ArrowLeft, Download, MessageSquare, Send, Star, CreditCard } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 import { formatDate, formatDateTime } from "@/lib/order-service"
 import { formatRand } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
@@ -28,9 +35,17 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     const orderId = isLegacyId ? undefined : (id as Id<"orders">)
     const order = useQuery(api.orders.getOrderById, orderId ? { orderId } : "skip")
     const submitSatisfaction = useMutation(api.orders.submitProjectSatisfaction)
+    const [paymentMethod, setPaymentMethod] = useState<string>("")
     const [rating, setRating] = useState(0)
     const [satisfactionComment, setSatisfactionComment] = useState("")
     const [isSubmittingRating, setIsSubmittingRating] = useState(false)
+    const [origin, setOrigin] = useState("")
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setOrigin(window.location.origin)
+        }
+    }, [])
 
     useEffect(() => {
         if (order?.satisfaction) {
@@ -278,10 +293,57 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                         {order.quote.description}
                                     </p>
                                 </div>
-                                <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white">
-                                    <Download className="mr-2 h-4 w-4" />
-                                    Download Quote PDF
-                                </Button>
+                                <div className="flex flex-col sm:flex-row gap-4">
+                                    <Button className="w-50 bg-orange-500 hover:bg-orange-600 text-white" variant="outline">
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download Quote PDF
+                                    </Button>
+                                    
+                                    {order.isPaid ? (
+                                        <Button className="w-50 bg-green-500 hover:bg-green-600 text-white" disabled>
+                                            <CreditCard className="mr-2 h-4 w-4" />
+                                            Payment Completed
+                                        </Button>
+                                    ) : (
+                                        <form action="https://www.payfast.co.za/eng/process" method="POST" className="w-full">
+                                            <input type="hidden" name="merchant_id" value="19287223" />
+                                            <input type="hidden" name="merchant_key" value="fnirdvkuq32on" />
+                                            <input type="hidden" name="return_url" value={`${origin}/client/orders/${order._id}/payment-success`} />
+                                            <input type="hidden" name="cancel_url" value={`${origin}/client/orders/${order._id}`} />
+                                            <input type="hidden" name="notify_url" value={`${origin}/api/payfast/notify`} />
+                                            <input type="hidden" name="amount" value={Number(order.quote.price).toFixed(2)} />
+                                            <input type="hidden" name="item_name" value={order.title} />
+                                            <input type="hidden" name="m_payment_id" value={order._id} />
+                                            {paymentMethod && paymentMethod !== "none" && (
+                                                <input type="hidden" name="payment_method" value={paymentMethod} />
+                                            )}
+                                            
+                                            <div className="flex flex-col sm:flex-row gap-3">
+                                                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                                                    <SelectTrigger className="w-[200px]">
+                                                        <SelectValue placeholder="All Payment Methods" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="none">All Payment Methods</SelectItem>
+                                                        <SelectItem value="cc">Credit Card</SelectItem>
+                                                        <SelectItem value="dc">Debit Card</SelectItem>
+                                                        <SelectItem value="ef">EFT</SelectItem>
+                                                        <SelectItem value="mp">Masterpass</SelectItem>
+                                                        <SelectItem value="ss">SnapScan</SelectItem>
+                                                        <SelectItem value="zp">Zapper</SelectItem>
+                                                        <SelectItem value="ap">Apple Pay</SelectItem>
+                                                        <SelectItem value="gp">Google Pay</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                
+                                                <Button type="submit" className="w-50 bg-green-600 hover:bg-green-700 text-white flex-1">
+                                                    <CreditCard className="mr-2 h-4 w-4" />
+                                                    Pay Now ({formatRand(order.quote.price)})
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    )}
+                                </div>
                             </CardContent>
                             </Card>
                         </div>

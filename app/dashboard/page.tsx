@@ -46,6 +46,14 @@ import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table"
+import {
     ResponsiveContainer,
     AreaChart,
     Area,
@@ -282,6 +290,7 @@ export default function DashboardPage() {
     const pendingOrders = useQuery(api.orders.getPendingOrders) || []
     const allProjects = useQuery(api.projects.getEditorProjects) || []
     const editorStats = useQuery(api.admin.getEditorStats) || []
+    const paidOrders = useQuery(api.orders.getPaidOrders) || []
     
     const [forwardingRequest, setForwardingRequest] = useState<any>(null)
     const [selectedProject, setSelectedProject] = useState<any>(null)
@@ -773,6 +782,45 @@ export default function DashboardPage() {
                                         No upcoming project or task due dates yet.
                                     </div>
                                 )}
+                            </div>
+                        </Card>
+                    </div>
+
+                    {/* Paid Orders Table */}
+                    <div className="mt-8">
+                        <Card className="rounded-2xl border bg-card shadow-sm p-6">
+                            <h3 className="font-semibold text-base mb-4">Paid Orders</h3>
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead>User</TableHead>
+                                            <TableHead>Project Name</TableHead>
+                                            <TableHead>Payment Date</TableHead>
+                                            <TableHead>Amount</TableHead>
+                                            <TableHead>Status</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {paidOrders.length === 0 ? (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No paid orders found.</TableCell>
+                                            </TableRow>
+                                        ) : paidOrders.map((order: any) => (
+                                            <TableRow key={order._id}>
+                                                <TableCell className="font-medium">
+                                                    {order.client?.name || "Unknown User"}
+                                                </TableCell>
+                                                <TableCell>{order.title}</TableCell>
+                                                <TableCell>{order.paymentDate ? new Date(order.paymentDate).toLocaleDateString() : (order.updatedAt ? new Date(order.updatedAt).toLocaleDateString() : "-")}</TableCell>
+                                                <TableCell>{formatRand(order.paymentAmount || (order.quote ? order.quote.price : 0))}</TableCell>
+                                                <TableCell>
+                                                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 border-transparent font-normal">Paid</Badge>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </div>
                         </Card>
                     </div>

@@ -69,7 +69,7 @@ export default function TasksPage() {
     // This ensures the Done column is populated when projects are marked complete
     const projects = useQuery(api.projects.getEditorProjects) || []
     const debugProjects = useQuery(api.projects.getAllProjectsDebug) || []
-    const quotedOrders = useQuery(api.orders.getQuotedOrders) || []
+    const paidOrders = useQuery(api.orders.getPaidOrders) || []
     const editors = useQuery(api.users.getAllEditors) || []
 
     useEffect(() => {
@@ -291,16 +291,16 @@ export default function TasksPage() {
                     <h1 className="text-2xl font-bold tracking-tight">Production Board</h1>
                     <p className="text-sm text-muted-foreground">Manage client requests and track production progress.</p>
                 </div>
-                {isAdmin && quotedOrders.length > 0 && (
+                {isAdmin && paidOrders.length > 0 && (
                     <Button 
                         onClick={() => setIsCreateProjectOpen(true)}
                         className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
                     >
                         <FolderPlus size={18} />
                         Create Project
-                        {quotedOrders.length > 0 && (
+                        {paidOrders.length > 0 && (
                             <Badge variant="secondary" className="ml-1 h-5 text-[10px]">
-                                {quotedOrders.length}
+                                {paidOrders.length}
                             </Badge>
                         )}
                     </Button>
@@ -447,21 +447,21 @@ export default function TasksPage() {
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold flex items-center gap-2 text-orange-500">
                             <FolderPlus size={18} />
-                            Create Project from Quoted Order
+                            Create Project from Paid Order
                         </DialogTitle>
                         <DialogDescription className="text-xs">
-                            Select a quoted order and assign editors to create a new production project.
+                            Select a paid order and assign editors to create a new production project.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-6">
                         {/* Order Selection */}
                         <div className="space-y-3">
-                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Select Quoted Order</Label>
-                            {quotedOrders.length === 0 ? (
-                                <p className="text-sm text-muted-foreground">No quoted orders available.</p>
+                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Select Paid Order</Label>
+                            {paidOrders.length === 0 ? (
+                                <p className="text-sm text-muted-foreground">No paid orders available.</p>
                             ) : (
                                 <div className="space-y-2 max-h-[150px] overflow-y-auto">
-                                    {quotedOrders.map((order: any) => (
+                                    {paidOrders.map((order: any) => (
                                         <button
                                             key={order._id}
                                             onClick={() => {

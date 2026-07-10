@@ -1,8 +1,16 @@
+"use client"
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Users, FolderKanban, TrendingUp, Activity } from "lucide-react"
+import { Users, FolderKanban, TrendingUp, Activity, DollarSign, Calendar } from "lucide-react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { formatRand } from "@/lib/utils"
+import { formatDate } from "@/lib/order-service"
 
 export default function AdminDashboardPage() {
+    const paidOrders = useQuery(api.orders.getPaidOrders)
+
     return (
         <div className="space-y-6">
             <div>
@@ -83,6 +91,50 @@ export default function AdminDashboardPage() {
                             </div>
                         ))}
                     </div>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-green-600" />
+                        Recently Paid Projects
+                    </CardTitle>
+                    <CardDescription>Clients who have successfully paid for their quoted orders.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {paidOrders === undefined ? (
+                        <div className="py-4 text-center text-sm text-muted-foreground">Loading payments...</div>
+                    ) : paidOrders.length === 0 ? (
+                        <div className="py-8 text-center text-sm text-muted-foreground">
+                            No paid orders found.
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {paidOrders.map((order) => (
+                                <div key={order._id} className="flex items-center justify-between border-b border-border pb-4 last:border-0 last:pb-0">
+                                    <div className="space-y-1">
+                                        <p className="text-sm font-medium">{order.title}</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            {order.client?.name || "Unknown Client"}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        <div className="flex items-center gap-2">
+                                            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 border-none">Paid</Badge>
+                                            <span className="font-bold text-green-600">
+                                                {formatRand(order.paymentAmount || order.quote?.price || 0)}
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <Calendar className="h-3 w-3" />
+                                            {order.paymentDate ? formatDate(order.paymentDate) : "Unknown Date"}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

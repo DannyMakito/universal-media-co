@@ -39,7 +39,8 @@ import {
     AlertTriangle,
     Settings,
     HelpCircle,
-    ShieldAlert
+    ShieldAlert,
+    Trophy
 } from "lucide-react"
 
 import {
@@ -152,6 +153,11 @@ const adminNav: NavGroup[] = [
                 url: "/dashboard/users",
                 icon: Users,
             },
+            {
+                title: "Events",
+                url: "/dashboard/events",
+                icon: Trophy,
+            },
 
         ],
     },
@@ -192,6 +198,11 @@ const clientNav: NavGroup[] = [
                 title: "Orders",
                 url: "/client/orders",
                 icon: Box,
+            },
+            {
+                title: "Events",
+                url: "/client/events",
+                icon: Trophy,
             },
         ],
     },
