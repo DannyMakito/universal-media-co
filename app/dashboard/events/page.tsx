@@ -187,7 +187,7 @@ function EventAdminCard({ event, generateWinner }: any) {
                     </div>
                     
                     <div className="pt-4 border-t">
-                        <h4 className="font-semibold mb-3">Winners</h4>
+                        <h4 className="font-semibold mb-3">Winner</h4>
                         <div className="space-y-2 mb-4">
                             {winners?.map((w: any, idx: number) => (
                                 <div key={idx} className="flex items-center justify-between bg-muted/50 p-3 rounded-lg text-sm">
@@ -216,7 +216,7 @@ function EventAdminCard({ event, generateWinner }: any) {
                                         View Participants
                                     </Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+                                <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
                                     <DialogHeader>
                                         <DialogTitle>Event Participants</DialogTitle>
                                     </DialogHeader>

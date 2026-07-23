@@ -187,11 +187,10 @@ export const generateWinner = mutation({
         const randomIndex = Math.floor(Math.random() * pool.length)
         const winnerId = pool[randomIndex] as import("./_generated/dataModel").Id<"users">
 
-        const winners = event.winners || []
-        winners.push({
+        const winners = [{
             clientId: winnerId,
             generatedAt: Date.now(),
-        })
+        }]
 
         await ctx.db.patch(args.eventId, { winners })
 
