@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { formatDate, formatDateTime } from "@/lib/order-service"
+
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
@@ -29,12 +30,31 @@ export default function AdminRequestDetailPage({ params }: { params: Promise<{ i
     
     const updateOrderMutation = useMutation(api.orders.updateOrder)
     const createMessageMutation = useMutation(api.messages.createMessage)
+    const markOrderAsPaidMutation = useMutation(api.orders.markOrderAsPaid)
 
     // Quote form state
     const [quotePrice, setQuotePrice] = useState("")
     const [quoteDays, setQuoteDays] = useState("")
     const [quoteDescription, setQuoteDescription] = useState("")
     const [isSubmittingQuote, setIsSubmittingQuote] = useState(false)
+    const [isMarkingPaid, setIsMarkingPaid] = useState(false)
+
+    const handleMarkAsPaid = async () => {
+        if (!orderId) return
+        setIsMarkingPaid(true)
+        try {
+            await markOrderAsPaidMutation({ orderId })
+            // Also notify the client
+            await createMessageMutation({
+                orderId,
+                content: `Your payment has been successfully recorded by an admin. Thank you!`,
+            })
+        } catch (error) {
+            console.error("Error marking as paid:", error)
+        } finally {
+            setIsMarkingPaid(false)
+        }
+    }
 
     const handleSubmitQuote = async () => {
         if (!quotePrice || !quoteDays || !quoteDescription || !order || !orderId) return
@@ -290,12 +310,46 @@ export default function AdminRequestDetailPage({ params }: { params: Promise<{ i
                             </Button>
                         </CardContent>
                     </Card>
+
+                    {/* Manual Payment Section */}
+                    {order.quote && (
+                        <Card className="mt-6 border-green-200">
+                            <CardHeader className="bg-green-50/50">
+                                <CardTitle className="text-green-800">Payment Status</CardTitle>
+                                <CardDescription>
+                                    Manage offline payments for this order
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                {order.isPaid ? (
+                                    <div className="flex items-center gap-2 text-green-600 font-medium">
+                                        <div className="h-2 w-2 rounded-full bg-green-600" />
+                                        Order marked as paid
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                        <p className="text-sm text-muted-foreground">
+                                            The client's online payment gateway is currently disabled. 
+                                            You can manually mark this order as paid once funds are received.
+                                        </p>
+                                        <Button 
+                                            className="bg-green-600 hover:bg-green-700 text-white shrink-0"
+                                            onClick={handleMarkAsPaid}
+                                            disabled={isMarkingPaid}
+                                        >
+                                            {isMarkingPaid ? "Processing..." : "Mark Order as Paid"}
+                                        </Button>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </TabsContent>
 
                 {/* Messages Tab */}
                 <TabsContent value="messages" className="h-[500px]">
-                    <ChatInterface 
-                        orderId={orderId} 
+                    <ChatInterface
+                        orderId={orderId}
                         title={`Chat with ${order.client?.name || "Client"}`}
                         showHead={false}
                     />

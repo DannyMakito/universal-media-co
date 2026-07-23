@@ -304,45 +304,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                                             <CreditCard className="mr-2 h-4 w-4" />
                                             Payment Completed
                                         </Button>
-                                    ) : (
-                                        <form action="https://www.payfast.co.za/eng/process" method="POST" className="w-full">
-                                            <input type="hidden" name="merchant_id" value="19287223" />
-                                            <input type="hidden" name="merchant_key" value="fnirdvkuq32on" />
-                                            <input type="hidden" name="return_url" value={`${origin}/client/orders/${order._id}/payment-success`} />
-                                            <input type="hidden" name="cancel_url" value={`${origin}/client/orders/${order._id}`} />
-                                            <input type="hidden" name="notify_url" value={`${origin}/api/payfast/notify`} />
-                                            <input type="hidden" name="amount" value={Number(order.quote.price).toFixed(2)} />
-                                            <input type="hidden" name="item_name" value={order.title} />
-                                            <input type="hidden" name="m_payment_id" value={order._id} />
-                                            {paymentMethod && paymentMethod !== "none" && (
-                                                <input type="hidden" name="payment_method" value={paymentMethod} />
-                                            )}
-                                            
-                                            <div className="flex flex-col sm:flex-row gap-3">
-                                                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                                                    <SelectTrigger className="w-[200px]">
-                                                        <SelectValue placeholder="All Payment Methods" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="none">All Payment Methods</SelectItem>
-                                                        <SelectItem value="cc">Credit Card</SelectItem>
-                                                        <SelectItem value="dc">Debit Card</SelectItem>
-                                                        <SelectItem value="ef">EFT</SelectItem>
-                                                        <SelectItem value="mp">Masterpass</SelectItem>
-                                                        <SelectItem value="ss">SnapScan</SelectItem>
-                                                        <SelectItem value="zp">Zapper</SelectItem>
-                                                        <SelectItem value="ap">Apple Pay</SelectItem>
-                                                        <SelectItem value="gp">Google Pay</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                
-                                                <Button type="submit" className="w-50 bg-green-600 hover:bg-green-700 text-white flex-1">
-                                                    <CreditCard className="mr-2 h-4 w-4" />
-                                                    Pay Now ({formatRand(order.quote.price)})
-                                                </Button>
-                                            </div>
-                                        </form>
-                                    )}
+                                    ) : null}
                                 </div>
                             </CardContent>
                             </Card>
