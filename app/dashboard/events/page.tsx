@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { toast } from "sonner"
-import { Trophy, Plus } from "lucide-react"
+import { Trophy, Plus, Users } from "lucide-react"
 
 export default function AdminEventsPage() {
     const events = useQuery(api.events.getEvents)
@@ -142,6 +142,7 @@ export default function AdminEventsPage() {
 
 function EventAdminCard({ event, generateWinner }: any) {
     const winners = useQuery(api.events.getEventWinners, { eventId: event._id })
+    const participants = useQuery(api.events.getEventParticipants, { eventId: event._id })
     const [isGenerating, setIsGenerating] = useState(false)
     
     const handleGenerate = async () => {
@@ -202,10 +203,46 @@ function EventAdminCard({ event, generateWinner }: any) {
                             )}
                         </div>
                         
-                        <Button onClick={handleGenerate} disabled={isGenerating} className="w-full md:w-auto">
-                            <Trophy className="mr-2 h-4 w-4" />
-                            {isGenerating ? "Drawing..." : "Draw Winner Randomly"}
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <Button onClick={handleGenerate} disabled={isGenerating} className="w-full sm:w-auto">
+                                <Trophy className="mr-2 h-4 w-4" />
+                                {isGenerating ? "Drawing..." : "Draw Winner Randomly"}
+                            </Button>
+                            
+                            <Dialog>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" className="w-full sm:w-auto">
+                                        <Users className="mr-2 h-4 w-4" />
+                                        View Participants
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+                                    <DialogHeader>
+                                        <DialogTitle>Event Participants</DialogTitle>
+                                    </DialogHeader>
+                                    <div className="space-y-4 mt-4">
+                                        {participants === undefined ? (
+                                            <p className="text-sm text-center text-muted-foreground">Loading participants...</p>
+                                        ) : participants.length === 0 ? (
+                                            <p className="text-sm text-center text-muted-foreground">No participants yet.</p>
+                                        ) : (
+                                            participants.map((p: any, idx: number) => (
+                                                <div key={idx} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                                                    <div>
+                                                        <p className="font-medium text-sm">{p.client?.name || "Unknown Client"}</p>
+                                                        <p className="text-xs text-muted-foreground">{p.client?.email}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <p className="font-bold text-primary">{p.entries} entries</p>
+                                                        <p className="text-xs text-muted-foreground">Spent R{p.totalPaid}</p>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
                     </div>
                 </div>
             </div>

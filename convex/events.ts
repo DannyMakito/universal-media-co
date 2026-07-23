@@ -239,3 +239,59 @@ export const updateEventStatus = mutation({
         })
     }
 })
+
+// Get event participants (Admin)
+export const getEventParticipants = query({
+    args: { eventId: v.id("events") },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity()
+        if (!identity) throw new Error("Not authenticated")
+
+        const user = await ctx.db
+            .query("users")
+            .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+            .unique()
+
+        if (!user || user.role !== "admin") throw new Error("Only admins can view participants")
+
+        const event = await ctx.db.get(args.eventId)
+        if (!event) throw new Error("Event not found")
+
+        const paidOrders = await ctx.db
+            .query("orders")
+            .filter((q) => q.eq(q.field("isPaid"), true))
+            .collect()
+
+        const eligibleOrders = paidOrders.filter((o) => {
+            const payDate = o.paymentDate || o.updatedAt
+            return payDate >= event.startDate && payDate <= event.endDate
+        })
+
+        const entriesByClient: Record<string, number> = {}
+
+        for (const order of eligibleOrders) {
+            const amount = order.paymentAmount || (order.quote ? order.quote.price : 0)
+            if (!entriesByClient[order.clientId]) {
+                entriesByClient[order.clientId] = 0
+            }
+            entriesByClient[order.clientId] += amount
+        }
+
+        const participants = []
+        for (const [clientId, totalPaid] of Object.entries(entriesByClient)) {
+            const entries = Math.floor(totalPaid / event.amountPerEntry)
+            if (entries > 0) {
+                const clientInfo = await ctx.db.get(clientId as import("./_generated/dataModel").Id<"users">)
+                if (clientInfo) {
+                    participants.push({
+                        client: clientInfo,
+                        entries,
+                        totalPaid
+                    })
+                }
+            }
+        }
+
+        return participants.sort((a, b) => b.entries - a.entries)
+    }
+})
